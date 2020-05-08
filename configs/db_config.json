@@ -1,0 +1,9 @@
+{
+  "type": "mysql",
+  "protocol": "tcp",
+  "host": "localhost",
+  "port": 3306,
+  "username": "root",
+  "password": "Hakula",
+  "database": "library"
+}
