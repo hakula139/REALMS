@@ -18,18 +18,24 @@ func main() {
 	// gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 
-	cfg, err := config.LoadDbConfig("./configs/db_config.json")
+	dbcfg, err := config.LoadDbConfig("./configs/db_config.json")
 	if err != nil {
 		panic(err.Error())
 	}
-	db, err := models.DbSetup(cfg)
+	db, err := models.DbSetup(dbcfg)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	// Provides db variable to controllers
+	libcfg, err := config.LoadLibraryConfig("./configs/library_config.json")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	// Provides variables to controllers
 	r.Use(func(c *gin.Context) {
 		c.Set("db", db)
+		c.Set("libcfg", libcfg)
 		c.Next()
 	})
 
@@ -51,6 +57,13 @@ func main() {
 	{
 		user.GET("/me", ctrl.Me)
 		user.GET("/status", ctrl.Status)
+
+		user.GET("/books", ctrl.ShowBookList)
+		user.GET("/overdue", ctrl.ShowOverdueList)
+		user.GET("/history", ctrl.ShowHistory)
+		user.POST("/books/:id", ctrl.BorrowBook)
+		user.PATCH("/books/:id", ctrl.ExtendDeadline)
+		user.DELETE("/books/:id", ctrl.ReturnBook)
 	}
 
 	// Admin privilege required

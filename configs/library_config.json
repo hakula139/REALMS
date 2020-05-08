@@ -1,0 +1,6 @@
+{
+  "borrow_expire_days": 14,
+  "ddl_extend_days": 7,
+  "max_extend_times": 3,
+  "max_overdue_books": 3
+}

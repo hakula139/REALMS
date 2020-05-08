@@ -41,7 +41,8 @@ func AddUser(c *gin.Context) {
 	user := models.User{
 		Username: input.Username,
 		Password: input.Password,
-		Level:    input.Level}
+		Level:    input.Level,
+	}
 	if err := user.Validate(); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

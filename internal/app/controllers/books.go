@@ -52,7 +52,8 @@ func AddBook(c *gin.Context) {
 		Title:     input.Title,
 		Author:    input.Author,
 		Publisher: input.Publisher,
-		ISBN:      input.ISBN}
+		ISBN:      input.ISBN,
+	}
 	db.Create(&book)
 
 	c.JSON(http.StatusOK, gin.H{"data": book})
