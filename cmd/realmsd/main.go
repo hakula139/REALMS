@@ -15,7 +15,7 @@ import (
 const session = "mysession"
 
 func main() {
-	// gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 
 	// Sets up a logger
