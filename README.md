@@ -4,7 +4,6 @@ REALMS Establishes A Library Management System, written in Go, using a MySQL dat
 
 ## TODO
 
-- [ ] Implement a logger, and log the admin's explanation when removing a book (log other operations as well)
 - [ ] Add a simple CLI front-end
 - [ ] Add unit tests
 - [ ] Add a detailed document
