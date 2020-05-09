@@ -18,6 +18,18 @@ func main() {
 	// gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 
+	// Sets up a logger
+	logcfg, err := config.LoadLogConfig("./configs/log_config.json")
+	if err != nil {
+		panic(err.Error())
+	}
+	logger, err := models.InitLogger(logcfg)
+	if err != nil {
+		panic(err.Error())
+	}
+	sugar := logger.Sugar()
+
+	// Sets up a database connection
 	dbcfg, err := config.LoadDbConfig("./configs/db_config.json")
 	if err != nil {
 		panic(err.Error())
@@ -34,6 +46,7 @@ func main() {
 
 	// Provides variables to controllers
 	r.Use(func(c *gin.Context) {
+		c.Set("logger", sugar)
 		c.Set("db", db)
 		c.Set("libcfg", libcfg)
 		c.Next()

@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hakula139/REALMS/internal/app/models"
 	"github.com/jinzhu/gorm"
+	"go.uber.org/zap"
 )
 
 // ErrUserNotFound occurs when the user is not found
@@ -49,6 +50,9 @@ func AddUser(c *gin.Context) {
 	}
 	db.Create(&user)
 
+	logger := c.MustGet("logger").(*zap.SugaredLogger)
+	logger.Infof("Added user %v", user.ID)
+
 	c.JSON(http.StatusOK, gin.H{"data": user})
 }
 
@@ -76,6 +80,9 @@ func UpdateUser(c *gin.Context) {
 	}
 	db.Model(&user).Updates(input)
 
+	logger := c.MustGet("logger").(*zap.SugaredLogger)
+	logger.Infof("Updated user %v", user.ID)
+
 	c.JSON(http.StatusOK, gin.H{"data": user})
 }
 
@@ -90,7 +97,11 @@ func RemoveUser(c *gin.Context) {
 		return
 	}
 
+	userID := user.ID
 	db.Delete(&user)
+
+	logger := c.MustGet("logger").(*zap.SugaredLogger)
+	logger.Infof("Removed user %v", userID)
 
 	c.JSON(http.StatusOK, gin.H{"data": true})
 }

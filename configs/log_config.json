@@ -1,0 +1,18 @@
+{
+  "level": "info",
+  "encoding": "json",
+  "outputPaths": [
+    "stdout",
+    "./logs/realmsd.log"
+  ],
+  "errorOutputPaths": [
+    "stderr"
+  ],
+  "encoderConfig": {
+    "messageKey": "msg",
+    "levelKey": "level",
+    "levelEncoder": "lowercase",
+    "timeKey": "time",
+    "timeEncoder": "ISO8601"
+  }
+}

@@ -3,7 +3,10 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
+
+	"go.uber.org/zap"
 )
 
 // DbConfig specifies the database connection settings
@@ -35,7 +38,7 @@ func LoadDbConfig(file string) (DbConfig, error) {
 		return cfg, err
 	}
 	dec := json.NewDecoder(cfgFile)
-	if err = dec.Decode(&cfg); err != nil {
+	if err := dec.Decode(&cfg); err != nil {
 		fmt.Println("[error] LoadDbConfig: invalid configuration.")
 		return cfg, err
 	}
@@ -52,8 +55,23 @@ func LoadLibraryConfig(file string) (LibraryConfig, error) {
 		return cfg, err
 	}
 	dec := json.NewDecoder(cfgFile)
-	if err = dec.Decode(&cfg); err != nil {
+	if err := dec.Decode(&cfg); err != nil {
 		fmt.Println("[error] LoadLibraryConfig: invalid configuration.")
+		return cfg, err
+	}
+	return cfg, nil
+}
+
+// LoadLogConfig reads the log settings from the file
+func LoadLogConfig(file string) (zap.Config, error) {
+	var cfg zap.Config
+	dat, err := ioutil.ReadFile(file)
+	if err != nil {
+		fmt.Println("[error] LoadLogConfig: unable to open the config file.")
+		return cfg, err
+	}
+	if err := json.Unmarshal(dat, &cfg); err != nil {
+		fmt.Println("[error] LoadLogConfig: invalid configuration.")
 		return cfg, err
 	}
 	return cfg, nil

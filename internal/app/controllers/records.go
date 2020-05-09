@@ -11,6 +11,7 @@ import (
 	"github.com/hakula139/REALMS/internal/app/config"
 	"github.com/hakula139/REALMS/internal/app/models"
 	"github.com/jinzhu/gorm"
+	"go.uber.org/zap"
 )
 
 const day = time.Hour * 24
@@ -101,6 +102,9 @@ func BorrowBook(c *gin.Context) {
 	}
 	db.Create(&record)
 
+	logger := c.MustGet("logger").(*zap.SugaredLogger)
+	logger.Infof("User %v borrowed book %v", userID, bookID)
+
 	c.JSON(http.StatusOK, gin.H{"data": record})
 }
 
@@ -154,6 +158,9 @@ func ReturnBook(c *gin.Context) {
 	}
 
 	db.Delete(&record)
+
+	logger := c.MustGet("logger").(*zap.SugaredLogger)
+	logger.Infof("User %v returned book %v", userID, bookID)
 
 	c.JSON(http.StatusOK, gin.H{"data": true})
 }

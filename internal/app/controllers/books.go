@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hakula139/REALMS/internal/app/models"
 	"github.com/jinzhu/gorm"
+	"go.uber.org/zap"
 )
 
 // ErrBookNotFound occurs when the queried book is not found
@@ -27,6 +28,11 @@ type UpdateBookInput struct {
 	Author    string `json:"author"`
 	Publisher string `json:"publisher"`
 	ISBN      string `json:"isbn"`
+}
+
+// RemoveBookInput is a schema that validates input to prevent invalid requests
+type RemoveBookInput struct {
+	Message string `json:"message"`
 }
 
 // FindBookInput is a schema that validates input to prevent invalid requests
@@ -56,6 +62,9 @@ func AddBook(c *gin.Context) {
 	}
 	db.Create(&book)
 
+	logger := c.MustGet("logger").(*zap.SugaredLogger)
+	logger.Infof("Added book %v", book.ID)
+
 	c.JSON(http.StatusOK, gin.H{"data": book})
 }
 
@@ -65,7 +74,8 @@ func UpdateBook(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 
 	var book models.Book
-	if err := db.Where("id = ?", c.Param("id")).First(&book).Error; err != nil {
+	bookID := c.Param("id")
+	if err := db.Where("id = ?", bookID).First(&book).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": ErrBookNotFound.Error()})
 		return
 	}
@@ -79,6 +89,9 @@ func UpdateBook(c *gin.Context) {
 
 	db.Model(&book).Updates(input)
 
+	logger := c.MustGet("logger").(*zap.SugaredLogger)
+	logger.Infof("Updated book %v", bookID)
+
 	c.JSON(http.StatusOK, gin.H{"data": book})
 }
 
@@ -88,12 +101,27 @@ func RemoveBook(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 
 	var book models.Book
-	if err := db.Where("id = ?", c.Param("id")).First(&book).Error; err != nil {
+	bookID := c.Param("id")
+	if err := db.Where("id = ?", bookID).First(&book).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": ErrBookNotFound.Error()})
 		return
 	}
 
+	// Validates input
+	var input RemoveBookInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	db.Delete(&book)
+
+	logger := c.MustGet("logger").(*zap.SugaredLogger)
+	if input.Message == "" {
+		logger.Infof("Removed book %v", bookID)
+	} else {
+		logger.Infof("Removed book %v with explanation: %v", bookID, input.Message)
+	}
 
 	c.JSON(http.StatusOK, gin.H{"data": true})
 }
