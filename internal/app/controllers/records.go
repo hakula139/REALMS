@@ -31,7 +31,7 @@ var ErrRecordNotFound = errors.New("database: record not found")
 var ErrExceedMaxExtendTimes = errors.New("library: extended too many times")
 
 // AddRecordInput is a schema that validates input to prevent invalid requests
-// ID, UID, BID, ExtendTimes will be generated automatically
+// ID, UserID, BookID, ExtendTimes will be generated automatically
 // BorrowDate will be set to current date if left blank
 type AddRecordInput struct {
 	BorrowDate time.Time `json:"borrow_date"`

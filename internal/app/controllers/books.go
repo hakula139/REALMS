@@ -18,7 +18,7 @@ type AddBookInput struct {
 	Title     string `json:"title" binding:"required"`
 	Author    string `json:"author"`
 	Publisher string `json:"publisher"`
-	ISBN      string `json:"ISBN"`
+	ISBN      string `json:"isbn"`
 }
 
 // UpdateBookInput is a schema that validates input to prevent invalid requests
@@ -26,14 +26,14 @@ type UpdateBookInput struct {
 	Title     string `json:"title"`
 	Author    string `json:"author"`
 	Publisher string `json:"publisher"`
-	ISBN      string `json:"ISBN"`
+	ISBN      string `json:"isbn"`
 }
 
 // FindBookInput is a schema that validates input to prevent invalid requests
 type FindBookInput struct {
 	Title  string `json:"title"`
 	Author string `json:"author"`
-	ISBN   string `json:"ISBN"`
+	ISBN   string `json:"isbn"`
 }
 
 // AddBook adds a new book to the library

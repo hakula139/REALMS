@@ -6,5 +6,5 @@ type Book struct {
 	Title     string `json:"title" gorm:"NOT NULL"`
 	Author    string `json:"author"`
 	Publisher string `json:"publisher"`
-	ISBN      string `json:"ISBN"`
+	ISBN      string `json:"isbn"`
 }
