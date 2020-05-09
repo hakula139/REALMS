@@ -59,6 +59,7 @@ func main() {
 		user.GET("/status", ctrl.Status)
 
 		user.GET("/books", ctrl.ShowBookList)
+		user.GET("/books/:id", ctrl.ShowBorrowed)
 		user.GET("/overdue", ctrl.ShowOverdueList)
 		user.GET("/history", ctrl.ShowHistory)
 		user.POST("/books/:id", ctrl.BorrowBook)

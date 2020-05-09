@@ -172,6 +172,27 @@ func ShowBookList(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": records})
 }
 
+// ShowBorrowed shows a book that the user has borrowed
+// Deadline is also returned in data.return_date
+// GET /user/books/:id
+func ShowBorrowed(c *gin.Context) {
+	db := c.MustGet("db").(*gorm.DB)
+
+	// Gets user ID
+	session := sessions.Default(c)
+	userID := session.Get(userkey)
+
+	// Gets book ID and checks if the book has been borrowed before
+	var record models.Record
+	bookID := c.Param("id")
+	if err := db.Where("user_id = ? AND book_id = ?", userID, bookID).First(&record).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": ErrBookNotBorrowed.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": record})
+}
+
 // ShowOverdueList shows all overdue books that the user has borrowed
 // GET /user/overdue
 func ShowOverdueList(c *gin.Context) {
