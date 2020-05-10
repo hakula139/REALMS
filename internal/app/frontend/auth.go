@@ -2,9 +2,7 @@ package frontend
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -36,14 +34,14 @@ func Login(jar *cookiejar.Jar) error {
 	defer res.Body.Close()
 
 	// Outputs the response
-	dataMsg, errMsg, err := readResponse(res)
+	data, err := readResponse(res)
 	if err != nil {
 		return err
 	}
-	if dataMsg != nil {
+	if _, ok := data["data"]; ok {
 		fmt.Printf("Welcome %v!\n", username)
-	} else if errMsg != nil {
-		fmt.Println(errMsg)
+	} else if errBody, ok := data["error"]; ok {
+		fmt.Println(errBody)
 	}
 	return nil
 }
@@ -65,14 +63,14 @@ func Logout(jar *cookiejar.Jar) error {
 	defer res.Body.Close()
 
 	// Outputs the response
-	dataMsg, errMsg, err := readResponse(res)
+	data, err := readResponse(res)
 	if err != nil {
 		return err
 	}
-	if dataMsg != nil {
+	if _, ok := data["data"]; ok {
 		fmt.Println("Successfully logged out!")
-	} else if errMsg != nil {
-		fmt.Println(errMsg)
+	} else if errBody, ok := data["error"]; ok {
+		fmt.Println(errBody)
 	}
 	return nil
 }
@@ -94,14 +92,14 @@ func Me(jar *cookiejar.Jar) error {
 	defer res.Body.Close()
 
 	// Outputs the response
-	dataMsg, errMsg, err := readResponse(res)
+	data, err := readResponse(res)
 	if err != nil {
 		return err
 	}
-	if dataMsg != nil {
-		fmt.Printf("Current user ID: %v\n", dataMsg)
-	} else if errMsg != nil {
-		fmt.Println(errMsg)
+	if dataBody, ok := data["data"]; ok {
+		fmt.Printf("Current user ID: %v\n", dataBody)
+	} else if errBody, ok := data["error"]; ok {
+		fmt.Println(errBody)
 	}
 	return nil
 }
@@ -123,12 +121,12 @@ func Status(jar *cookiejar.Jar) error {
 	defer res.Body.Close()
 
 	// Outputs the response
-	dataMsg, _, err := readResponse(res)
+	data, err := readResponse(res)
 	if err != nil {
 		return err
 	}
-	if dataMsg != nil {
-		stat, _ := dataMsg.(bool)
+	if dataBody, ok := data["data"]; ok {
+		stat, _ := dataBody.(bool)
 		if stat {
 			fmt.Println("Online")
 		} else {
@@ -151,23 +149,4 @@ func getCredentials() (string, string) {
 	fmt.Println()
 
 	return strings.TrimSpace(username), password
-}
-
-func readResponse(res *http.Response) (dataMsg, errMsg interface{}, err error) {
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		fmt.Println(ErrReadResponseFailed.Error())
-		return nil, nil, err
-	}
-	var data map[string]interface{}
-	if err := json.Unmarshal(body, &data); err != nil {
-		fmt.Println(ErrInvalidResponse.Error())
-		return nil, nil, err
-	}
-	if dataMsg, ok := data["data"]; ok {
-		return dataMsg, nil, nil
-	} else if errMsg, ok := data["error"]; ok {
-		return nil, errMsg, nil
-	}
-	return nil, nil, nil
 }

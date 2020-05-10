@@ -15,3 +15,6 @@ var ErrReadResponseFailed = errors.New("cli: failed to read the http response")
 
 // ErrInvalidResponse occurs when the http response is invalid
 var ErrInvalidResponse = errors.New("cli: failed to parse the http response")
+
+// ErrInvalidInput occurs when the user's input is invalid
+var ErrInvalidInput = errors.New("cli: invalid input")

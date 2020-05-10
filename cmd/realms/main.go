@@ -59,6 +59,30 @@ func router(c *cli.Context) error {
 			if err := frontend.Status(jar); err != nil {
 				fmt.Println(err.Error())
 			}
+		case "add book":
+			if err := frontend.AddBook(jar); err != nil {
+				fmt.Println(err.Error())
+			}
+		case "update book":
+			if err := frontend.UpdateBook(jar); err != nil {
+				fmt.Println(err.Error())
+			}
+		case "remove book":
+			if err := frontend.RemoveBook(jar); err != nil {
+				fmt.Println(err.Error())
+			}
+		case "show books":
+			if err := frontend.ShowBooks(); err != nil {
+				fmt.Println(err.Error())
+			}
+		case "show book":
+			if err := frontend.ShowBook(); err != nil {
+				fmt.Println(err.Error())
+			}
+		case "find books":
+			if err := frontend.FindBooks(jar); err != nil {
+				fmt.Println(err.Error())
+			}
 		case "exit":
 			fmt.Println("Bye!")
 			return nil
