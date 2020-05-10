@@ -59,6 +59,7 @@ func main() {
 	// Public
 	r.POST("/login", ctrl.Login)
 	r.GET("/logout", ctrl.Logout)
+	r.GET("/status", ctrl.Status)
 
 	r.GET("/books", ctrl.ShowBooks)
 	r.GET("/books/:id", ctrl.ShowBook)
@@ -69,7 +70,6 @@ func main() {
 	user.Use(ctrl.AuthRequired)
 	{
 		user.GET("/me", ctrl.Me)
-		user.GET("/status", ctrl.Status)
 
 		user.GET("/books", ctrl.ShowBookList)
 		user.GET("/books/:id", ctrl.ShowBorrowed)

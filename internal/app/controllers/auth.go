@@ -28,7 +28,7 @@ var ErrAlreadyLoggedIn = errors.New("auth: already logged in")
 var ErrSaveSessionFailed = errors.New("auth: failed to save session")
 
 // ErrInvalidSession occurs when the session token is not found or invalid
-var ErrInvalidSession = errors.New("auth: invalid session token")
+var ErrInvalidSession = errors.New("auth: invalid session token, have you logged in?")
 
 // AuthRequired is a middleware that validates the session
 // User privilege required
@@ -125,21 +125,21 @@ func Logout(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": true})
 }
 
-// Me shows the currently logged-in user
+// Me shows the current logged-in user
 // GET /user/me
 func Me(c *gin.Context) {
 	session := sessions.Default(c)
 	uid := session.Get(userkey)
-	c.JSON(http.StatusOK, gin.H{"user": uid})
+	c.JSON(http.StatusOK, gin.H{"data": uid})
 }
 
-// Status shows the current log-in status
-// GET /user/status
+// Status shows the current login status
+// GET /status
 func Status(c *gin.Context) {
 	session := sessions.Default(c)
 	if uid := session.Get(userkey); uid == nil {
-		c.JSON(http.StatusOK, gin.H{"status": false})
+		c.JSON(http.StatusOK, gin.H{"data": false})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"status": true})
+	c.JSON(http.StatusOK, gin.H{"data": true})
 }
