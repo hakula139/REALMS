@@ -219,7 +219,8 @@ func printUsers(users []interface{}) {
 		return
 	}
 	width := 25
-	fmt.Printf("ID\t%-*s%-s\n",
+	fmt.Printf("%s\t%-*s%-s\n",
+		"ID",
 		width, "Username",
 		"Level",
 	)

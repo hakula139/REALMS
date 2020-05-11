@@ -246,7 +246,8 @@ func printBooks(books []interface{}) {
 		return
 	}
 	width := 25
-	fmt.Printf("ID\t%-*s%-*s%-*s%-*s\n",
+	fmt.Printf("%s\t%-*s%-*s%-*s%-*s\n",
+		"ID",
 		width, "Title",
 		width, "Author",
 		width, "Publisher",

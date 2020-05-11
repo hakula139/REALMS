@@ -4,8 +4,11 @@ import (
 	"errors"
 )
 
-// URL is where the CLI makes http requests to
-const URL = "http://localhost:7274"
+const (
+	// URL is where the CLI makes http requests to
+	URL       = "http://localhost:7274"
+	debugMode = true
+)
 
 const (
 	addMode    = iota
@@ -13,6 +16,9 @@ const (
 	removeMode = iota
 	showMode   = iota
 	findMode   = iota
+
+	showOverdueMode = iota
+	showHistoryMode = iota
 )
 
 // ErrRequestFailed occurs when failed to make an http request

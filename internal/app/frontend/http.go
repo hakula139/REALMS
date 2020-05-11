@@ -18,21 +18,21 @@ func sendBookRequest(
 	mode int,
 ) (res *http.Response, err error) {
 	booksMgrURL := URL
-	if mode == showMode {
+	switch mode {
+	case addMode:
+		booksMgrURL += "/admin/books"
+	case updateMode:
+		fallthrough
+	case removeMode:
+		booksMgrURL += "/admin/books/" + strconv.Itoa(bookID)
+	case showMode:
 		booksMgrURL += "/books"
 		if bookID != 0 {
 			booksMgrURL += "/" + strconv.Itoa(bookID)
 		}
 		return http.Get(booksMgrURL)
-	}
-
-	if mode == findMode {
+	case findMode:
 		booksMgrURL += "/books/find"
-	} else {
-		booksMgrURL += "/admin/books"
-		if mode != addMode {
-			booksMgrURL += "/" + strconv.Itoa(bookID)
-		}
 	}
 	return sendRequest(method, jar, input, booksMgrURL)
 }
@@ -45,10 +45,47 @@ func sendUserRequest(
 	mode int,
 ) (res *http.Response, err error) {
 	usersMgrURL := URL + "/admin/users"
-	if (mode == showMode && userID != 0) || mode == updateMode || mode == removeMode {
+	switch mode {
+	case addMode:
+		// Does nothing
+	case updateMode:
+		fallthrough
+	case removeMode:
 		usersMgrURL += "/" + strconv.Itoa(userID)
+	case showMode:
+		if userID != 0 {
+			usersMgrURL += "/" + strconv.Itoa(userID)
+		}
 	}
 	return sendRequest(method, jar, input, usersMgrURL)
+}
+
+func sendRecordRequest(
+	method string,
+	jar *cookiejar.Jar,
+	input interface{},
+	bookID int,
+	mode int,
+) (res *http.Response, err error) {
+	recordsMgrURL := URL + "/user"
+	switch mode {
+	case addMode:
+		fallthrough
+	case updateMode:
+		fallthrough
+	case removeMode:
+		recordsMgrURL += "/books/" + strconv.Itoa(bookID)
+	case showMode:
+		recordsMgrURL += "/books"
+		if bookID != 0 {
+			recordsMgrURL += "/" + strconv.Itoa(bookID)
+		}
+	case showOverdueMode:
+		recordsMgrURL += "/overdue"
+	case showHistoryMode:
+		recordsMgrURL += "/history"
+	}
+	return sendRequest(method, jar, input, recordsMgrURL)
 }
 
 func sendRequest(

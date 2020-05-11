@@ -103,6 +103,34 @@ func router(c *cli.Context) error {
 			if err := frontend.ShowUser(jar); err != nil {
 				fmt.Println(err.Error())
 			}
+		case "borrow book":
+			if err := frontend.BorrowBook(jar); err != nil {
+				fmt.Println(err.Error())
+			}
+		case "return book":
+			if err := frontend.ReturnBook(jar); err != nil {
+				fmt.Println(err.Error())
+			}
+		case "check ddl":
+			if err := frontend.ShowBorrowed(jar); err != nil {
+				fmt.Println(err.Error())
+			}
+		case "extend ddl":
+			if err := frontend.ExtendDeadline(jar); err != nil {
+				fmt.Println(err.Error())
+			}
+		case "show list":
+			if err := frontend.ShowBookList(jar); err != nil {
+				fmt.Println(err.Error())
+			}
+		case "show overdue":
+			if err := frontend.ShowOverdueList(jar); err != nil {
+				fmt.Println(err.Error())
+			}
+		case "show history":
+			if err := frontend.ShowHistory(jar); err != nil {
+				fmt.Println(err.Error())
+			}
 		case "exit":
 			fmt.Println("Bye!")
 			return nil

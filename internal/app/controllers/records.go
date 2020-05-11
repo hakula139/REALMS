@@ -16,6 +16,10 @@ import (
 
 const day = time.Hour * 24
 
+// ErrExceedMaxOverdueBooks occurs when the user has too many overdue books,
+// thus being suspended
+var ErrExceedMaxOverdueBooks = errors.New("library: too many overdue books")
+
 // ErrBookBorrowed occurs when the user wants to borrow a book which has been
 // borrowed before
 var ErrBookBorrowed = errors.New("library: book already borrowed")
@@ -53,7 +57,7 @@ func BorrowBook(c *gin.Context) {
 	today := time.Now().Local()
 	db.Model(&models.Record{}).Where("user_id = ? AND return_date < ?", userID, today).Count(&count)
 	if count >= libcfg.MaxOverdueBooks {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": ErrUnauthorized.Error()})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": ErrExceedMaxOverdueBooks.Error()})
 		return
 	}
 
@@ -224,7 +228,7 @@ func ShowHistory(c *gin.Context) {
 	userID := session.Get(userkey)
 
 	var records []models.Record
-	db.Order("return_date").Unscoped().Where("user_id = ?", userID).Find(&records)
+	db.Order("id DESC").Unscoped().Where("user_id = ?", userID).Find(&records)
 
 	c.JSON(http.StatusOK, gin.H{"data": records})
 }
