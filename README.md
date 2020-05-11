@@ -4,7 +4,7 @@ REALMS Establishes A Library Management System, written in Go, using a MySQL dat
 
 ## TODO
 
-- [ ] Add a simple CLI front-end
+- [x] Add a simple CLI front-end
 - [ ] Add unit tests
 - [ ] Add a detailed document
 
