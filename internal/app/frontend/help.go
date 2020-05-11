@@ -18,6 +18,11 @@ func ShowHelp() error {
 	printCommand("show books", "Shows all books in the library")
 	printCommand("show book", "Shows the book of given ID")
 	printCommand("find books", "Finds books by title / author / ISBN")
+	printCommand("add user", "Adds a new user to the database")
+	printCommand("update user", "Updates data of a user")
+	printCommand("remove user", "Removes a user from the database")
+	printCommand("show users", "Shows all users in the library")
+	printCommand("show user", "Shows the user of given ID")
 	printCommand("exit", "Quit")
 	return nil
 }

@@ -34,6 +34,29 @@ func sendBookRequest(
 			booksMgrURL += "/" + strconv.Itoa(bookID)
 		}
 	}
+	return sendRequest(method, jar, input, booksMgrURL)
+}
+
+func sendUserRequest(
+	method string,
+	jar *cookiejar.Jar,
+	input interface{},
+	userID int,
+	mode int,
+) (res *http.Response, err error) {
+	usersMgrURL := URL + "/admin/users"
+	if (mode == showMode && userID != 0) || mode == updateMode || mode == removeMode {
+		usersMgrURL += "/" + strconv.Itoa(userID)
+	}
+	return sendRequest(method, jar, input, usersMgrURL)
+}
+
+func sendRequest(
+	method string,
+	jar *cookiejar.Jar,
+	input interface{},
+	url string,
+) (res *http.Response, err error) {
 	client := &http.Client{
 		Jar: jar,
 	}
@@ -41,7 +64,7 @@ func sendBookRequest(
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequest(method, booksMgrURL, bytes.NewBuffer(jsonStr))
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(jsonStr))
 	if err != nil {
 		return nil, err
 	}

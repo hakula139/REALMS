@@ -8,14 +8,6 @@ import (
 	"strings"
 )
 
-const (
-	addMode    = iota
-	updateMode = iota
-	removeMode = iota
-	showMode   = iota
-	findMode   = iota
-)
-
 type bookModel struct {
 	ID        uint   `json:"id,omitempty"`
 	Title     string `json:"title,omitempty"`
@@ -277,11 +269,4 @@ func printBook(book map[string]interface{}) {
 	fmt.Printf("   Author:    %v\n", book["author"])
 	fmt.Printf("   Publisher: %v\n", book["publisher"])
 	fmt.Printf("   ISBN:      %v\n", book["isbn"])
-}
-
-func slice(s string, width int) string {
-	if len(s) > width {
-		return s[:width]
-	}
-	return s
 }
