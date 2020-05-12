@@ -13,6 +13,9 @@ import (
 // ErrUserNotFound occurs when the user is not found
 var ErrUserNotFound = errors.New("database: user not found")
 
+// ErrUsernameExists occurs when the username already exists
+var ErrUsernameExists = errors.New("database: username already exists")
+
 // AddUserInput is a schema that validates input to prevent invalid requests
 // ID will be generated automatically
 type AddUserInput struct {
@@ -48,7 +51,10 @@ func AddUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	db.Create(&user)
+	if err := db.Create(&user).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": ErrUsernameExists.Error()})
+		return
+	}
 
 	logger := c.MustGet("logger").(*zap.SugaredLogger)
 	logger.Infof("Added user %v", user.ID)
