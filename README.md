@@ -125,9 +125,17 @@ Method: `POST /login`
 Content-Type: `multipart/form-data`  
 CLI command: `login`
 
-You'll be required to enter your username and password (FYI, the password is invisible while typing). There's no `signup` in REALMS, while a user account can only be acquired from an admin.
+In `realms`:
 
-To authenticate a user's credentials, REALMS uses session. In the implementation of the CLI tool, a session cookie is used to store the essential information, and the cookies are handled by [cookiejar](https://golang.org/pkg/net/http/cookiejar).
+```text {.line-numbers}
+> login
+Enter Username: Hakula
+Enter Password:
+```
+
+You'll be required to enter your username and password (FYI, the password is invisible while typing). There's no `signup` in REALMS, so a user account can only be acquired from an admin.
+
+To authenticate a user's credentials, REALMS uses the session. In the implementation of `realms`, a session cookie is used to store the essential information, and the cookies are handled by [cookiejar](https://golang.org/pkg/net/http/cookiejar).
 
 On the server-side, the password will be hashed using [bcrypt](https://en.wikipedia.org/wiki/Bcrypt) before save.
 
@@ -146,10 +154,15 @@ In case of a successful login, you'll receive a welcome message.
 Welcome Hakula!
 ```
 
-Otherwise, an error will be returned. Possible error messages are shown below.
+Otherwise, an error will be returned. If the server didn't return a response, `realms` will print the following message.
 
 ```text {.line-numbers}
 cli: failed to make an http request, did you start realmsd?
+```
+
+Other possible error messages are shown below.
+
+```text {.line-numbers}
 auth: user not exist
 auth: incorrect password
 auth: already logged in
@@ -162,6 +175,12 @@ auth: failed to save session
 
 Method: `GET /logout`  
 CLI command: `logout`
+
+In `realms`:
+
+```text {.line-numbers}
+> logout
+```
 
 ##### 3.2.2 Response
 
@@ -181,7 +200,6 @@ Successfully logged out!
 Otherwise, an error will be returned. Possible error messages are shown below.
 
 ```text {.line-numbers}
-cli: failed to make an http request, did you start realmsd?
 auth: invalid session token, have you logged in?
 auth: failed to save session
 ```
@@ -192,6 +210,12 @@ auth: failed to save session
 
 Method: `GET /user/me`  
 CLI command: `me`
+
+In `realms`:
+
+```text {.line-numbers}
+> me
+```
 
 **User** privilege is required, which means you have to login before doing this operation.
 
@@ -223,6 +247,12 @@ auth: unauthorized
 Method: `GET /status`  
 CLI command: `status`
 
+In `realms`:
+
+```text {.line-numbers}
+> status
+```
+
 ##### 3.4.2 Response
 
 Status: `200 OK`  
@@ -236,7 +266,6 @@ We expect the following output.
 
 ```text {.line-numbers}
 Online
-Offline
 ```
 
 #### 3.5 Add a new book
@@ -256,9 +285,19 @@ CLI command: `add book`
 }
 ```
 
+In `realms`:
+
+```text {.line-numbers}
+> add book
+Title (required): CS:APP
+Author (optional): Randal E. Bryant
+Publisher (optional): Pearson
+ISBN (optional): 978-0134092669
+```
+
 **Admin** privilege is required. In REALMS, we use `level` to indicate a user's privilege, which is a property of the user model. When a user makes a request, the server will check if he/she has admin privilege. If not, an Unauthorized Error will be returned.
 
-You'll be required to input the necessary information of the book, and the `title` field should not be blank, or an error will be returned.
+You'll be required to input the necessary information of the book, and the `title` field should not be blank, or an error will be returned. To skip an optional field in `realms`, simply press Enter.
 
 On the server-side, the following message will be written to log using [zap](https://pkg.go.dev/mod/go.uber.org/zap). The default path to the log file is `./logs/realmsd.log`.
 
@@ -283,7 +322,7 @@ Content-Type: `application/json`
 }
 ```
 
-The complete information of the added book will be returned, since you may want to display it in your front-end application. For the sake of simplicity, here the CLI tool will just print the book ID.
+The complete information of the added book will be returned, since you may want to display it in your front-end application. For the sake of simplicity, here `realms` will just print the book ID.
 
 ```text {.line-numbers}
 Successfully added book 20
@@ -310,9 +349,22 @@ CLI command: `update book`
 }
 ```
 
+In `realms`:
+
+```text {.line-numbers}
+> update book
+Book ID: 20
+Title (optional): Computer Systems
+Author (optional): Randal E. Bryant, David R. O'Hallaron
+Publisher (optional):
+ISBN (optional):
+```
+
 **Admin** privilege is required.
 
-Here `:id` refers to the book ID. Simply sending a request including the fields that you want to update is fine, and empty values will be omitted. Still, there's an input checker for all inputs on the server-side, which will validate your request body to prevent invalid requests.
+Here `:id` refers to the book ID, which `realms` will prompt the user for input at the beginning.
+
+Simply sending a request including just the fields that you want to update is fine, and empty values will be omitted. Still, there's an input checker for all inputs on the server-side, which will validate your request body to prevent invalid requests.
 
 The following message will be written to log.
 
@@ -362,6 +414,14 @@ CLI command: `remove book`
 {"message": "Book lost"}
 ```
 
+In `realms`:
+
+```text {.line-numbers}
+> remove book
+Book ID: 5
+Explanation (optional): Book lost
+```
+
 **Admin** privilege is required.
 
 The `message` field is optional, which is the explanation why you remove the book.
@@ -369,13 +429,13 @@ The `message` field is optional, which is the explanation why you remove the boo
 The following message will be written to log.
 
 ```json {.line-numbers}
-{"level":"info","time":"2020-05-04T02:13:00.956+0800","msg":"Removed book 20 with explanation: Book lost"}
+{"level":"info","time":"2020-05-04T02:13:00.956+0800","msg":"Removed book 5 with explanation: Book lost"}
 ```
 
 Or if there's no explanation:
 
 ```json {.line-numbers}
-{"level":"info","time":"2020-05-04T02:13:00.956+0800","msg":"Removed book 20"}
+{"level":"info","time":"2020-05-04T02:13:00.956+0800","msg":"Removed book 5"}
 ```
 
 ##### 3.7.2 Response
@@ -390,7 +450,7 @@ Content-Type: `application/json`
 Since the book has already been removed, there's no need to return its information.
 
 ```text {.line-numbers}
-Successfully removed book 20
+Successfully removed book 5
 ```
 
 Possible error messages are shown below.
@@ -398,6 +458,222 @@ Possible error messages are shown below.
 ```text {.line-numbers}
 auth: unauthorized
 database: book not found
+```
+
+#### 3.8 Show all books
+
+##### 3.8.1 Request
+
+Method: `GET /books`  
+CLI command: `show books`
+
+In `realms`:
+
+```text {.line-numbers}
+> show books
+```
+
+##### 3.8.2 Response
+
+Status: `200 OK`  
+Content-Type: `application/json`
+
+```json {.line-numbers}
+{
+  "data": [
+    {
+      "id": 12,
+      "title": "A Byte of Python",
+      "author": "Swaroop C H",
+      "publisher": "",
+      "isbn": ""
+    },
+    {
+      "id": 20,
+      "title": "Computer Systems",
+      "author": "Randal E. Bryant, David R. O'Hallaron",
+      "publisher": "Pearson",
+      "isbn": "978-0134092669"
+    }
+  ]
+}
+```
+
+We expect the following output, aligned in table style.
+
+```text {.line-numbers}
+ID      Title                    Author                   Publisher                ISBN
+------------------------------------------------------------------------------------------------------------
+12      A Byte of Python         Swaroop C H
+20      Computer Systems         Randal E. Bryant, David  Pearson                  978-0134092669
+22      Operating Systems: Thre  Andrea C. Arpaci-Dussea  CreateSpace Independent  978-1985086593
+```
+
+Here the column width can be customized in `realms`, which is `25` by default. Overflowed content will be hidden.
+
+If there's no book found, `realms` will print the following message.
+
+```text {.line-numbers}
+No books found
+```
+
+In the implementation of `realms`, when handling distinct responses, generally we use an `interface{}` to represent the unknown data type (which can be `bool`, `int`, `string`, `map[string]interface{}`). However, when it comes to this response, the returned data is in fact a `[]map[string]interface{}`, which cannot be asserted directly. So here's a workaround.
+
+```go
+// ShowBooks shows all books in the library
+func ShowBooks() error {
+  // ...
+
+  // Extracts the data
+  // dataBody is of type interface{}
+  if dataBody, ok := data["data"]; ok {
+    books := dataBody.([]interface{}) // asserts to []interface{} first
+    printBooks(books)
+  }
+  return nil
+}
+
+func printBooks(books []interface{}) {
+  // ...
+  for _, elem := range books {
+    book := elem.(map[string]interface{}) // asserts the elements later
+    // ...
+  }
+}
+```
+
+#### 3.9 Show the book of given ID
+
+##### 3.9.1 Request
+
+Method: `GET /books/:id`  
+CLI command: `show book`
+
+In `realms`:
+
+```text {.line-numbers}
+> show book
+Book ID: 20
+```
+
+##### 3.9.2 Response
+
+Status: `200 OK`  
+Content-Type: `application/json`
+
+```json {.line-numbers}
+{
+  "data": {
+    "id": 20,
+    "title": "Computer Systems",
+    "author": "Randal E. Bryant, David R. O'Hallaron",
+    "publisher": "Pearson",
+    "isbn": "978-0134092669"
+  }
+}
+```
+
+We expect the following formatted output.
+
+```text
+Book 20
+   Title:     Computer Systems
+   Author:    Randal E. Bryant, David R. O'Hallaron
+   Publisher: Pearson
+   ISBN:      978-0134092669
+```
+
+Possible error messages are shown below.
+
+```text {.line-numbers}
+database: book not found
+```
+
+#### 3.10 Find books by title / author / ISBN
+
+##### 3.10.1 Request
+
+Method: `POST /books/find`  
+Content-Type: `application/json`  
+CLI command: `find books`
+
+To search by title (fuzzy, case-insensitive):
+
+```json {.line-numbers}
+{"title": "system"}
+```
+
+To search by author (exact, case-insensitive):
+
+```json {.line-numbers}
+{"author": "Randal E. Bryant, David R. O'Hallaron"}
+```
+
+To search by ISBN (exact, case-insensitive):
+
+```json {.line-numbers}
+{"isbn": "978-0134092669"}
+```
+
+To search by title and author:
+
+```json {.line-numbers}
+{
+  "title": "foo",
+  "author": "bar"
+}
+```
+
+etc.
+
+In `realms`:
+
+```text
+> find books
+Title (optional): system
+Author (optional):
+ISBN (optional):
+```
+
+##### 3.10.2 Response
+
+Status: `200 OK`  
+Content-Type: `application/json`
+
+```json {.line-numbers}
+{
+  "data": [
+    {
+      "id": 20,
+      "title": "Computer Systems",
+      "author": "Randal E. Bryant, David R. O'Hallaron",
+      "publisher": "Pearson",
+      "isbn": "978-0134092669"
+    },
+    {
+      "id": 22,
+      "title": "Operating Systems: Three Easy Pieces",
+      "author": "Andrea C. Arpaci-Dusseau, Remzi H. Arpaci-Dusseau",
+      "publisher": "CreateSpace Independent Publishing Platform",
+      "isbn": "978-1985086593"
+    }
+  ]
+}
+```
+
+We expect the following output.
+
+```text
+ID      Title                    Author                   Publisher                ISBN
+------------------------------------------------------------------------------------------------------------
+20      Computer Systems         Randal E. Bryant, David  Pearson                  978-0134092669
+22      Operating Systems: Thre  Andrea C. Arpaci-Dussea  CreateSpace Independent  978-1985086593
+```
+
+If there's no book found, `realms` will print the following message.
+
+```text {.line-numbers}
+No books found
 ```
 
 ## TODO
