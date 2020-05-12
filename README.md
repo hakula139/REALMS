@@ -262,7 +262,7 @@ Content-Type: `application/json`
 {"data": true}
 ```
 
-We expect the following output.
+If the current user is logged in, you'll see the following message.
 
 ```text {.line-numbers}
 Online
@@ -573,7 +573,7 @@ Content-Type: `application/json`
 }
 ```
 
-We expect the following formatted output.
+Output:
 
 ```text
 Book 20
@@ -661,7 +661,7 @@ Content-Type: `application/json`
 }
 ```
 
-We expect the following output.
+Output:
 
 ```text
 ID      Title                    Author                   Publisher                ISBN
@@ -674,6 +674,78 @@ If there's no book found, `realms` will print the following message.
 
 ```text {.line-numbers}
 No books found
+```
+
+#### 3.11 Add a new user
+
+##### 3.11.1 Request
+
+Method: `POST /admin/users`  
+Content-Type: `application/json`  
+CLI command: `add user`
+
+```json {.line-numbers}
+{
+  "username": "Guest",
+  "password": "123456",
+  "level": 1
+}
+```
+
+In `realms`:
+
+```text {.line-numbers}
+> add user
+Enter Username: Guest
+Enter Password:
+Enter Password again:
+(1: User, 2: Admin, 3: Super Admin)
+Enter Privilege Level: 1
+```
+
+**Admin** privilege is required.
+
+The username should be unique. As for the privilege level:
+
+| Level | Privilege   |
+|:-----:|:-----------:|
+| 1     | User        |
+| 2     | Admin       |
+| 3     | Super Admin |
+
+The following message will be written to log.
+
+```json {.line-numbers}
+{"level":"info","time":"2020-05-05T14:44:18.319+0800","msg":"Added user 11"}
+```
+
+##### 3.11.2 Response
+
+Status: `200 OK`  
+Content-Type: `application/json`
+
+```json {.line-numbers}
+{
+  "data": {
+    "id": 11,
+    "username": "Guest",
+    "password": "$2a$10$wUGgnk03qDQwQNg0c722GuUm4oGbcG5GpC9vAqgAKxbfJ3jt8usYq",
+    "level": 1
+  }
+}
+```
+
+Output:
+
+```text
+Successfully added user 11
+```
+
+Possible error messages are shown below.
+
+```text {.line-numbers}
+auth: unauthorized
+database: username already exists
 ```
 
 ## TODO
