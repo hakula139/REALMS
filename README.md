@@ -10,6 +10,7 @@ To set up the environment, you need to have the following dependencies installed
 
 - [Go](https://golang.org/dl) 1.14 or above
 - [GNU make](https://www.gnu.org/software/make) 4.0 or above
+- [MySQL](https://dev.mysql.com/downloads) 5.7 or above / [MariaDB](https://mariadb.com/downloads) 10.4 or above
 
 For Windows, try [MinGW-w64](https://sourceforge.net/projects/mingw-w64).
 
@@ -50,6 +51,8 @@ Run `realmsd` using the command below, and the server will listen to port `7274`
 ```bash {.line-numbers}
 ./bin/realmsd
 ```
+
+`realmsd` will open a database connection to a MySQL database, originally at `root:Hakula@tcp(localhost:3306)/library`. You can modify the configuration in the config file `./configs/db_config.json`. There's no need to manually create a database named `library`, as it'll be created automatically in advance.
 
 #### 2.2 realms
 
@@ -299,7 +302,7 @@ ISBN (optional): 978-0134092669
 
 You'll be required to input the necessary information of the book, and the `title` field should not be blank, or an error will be returned. To skip an optional field in `realms`, simply press Enter.
 
-On the server-side, the following message will be written to log using [zap](https://pkg.go.dev/mod/go.uber.org/zap). The default path to the log file is `./logs/realmsd.log`.
+On the server-side, the following message will be written to log using [zap](https://pkg.go.dev/mod/go.uber.org/zap). The default path to the log file is `./logs/realmsd.log`, which can be modified in the config file `./configs/log_config.json`.
 
 ```json {.line-numbers}
 {"level":"info","time":"2020-05-04T01:19:11.206+0800","msg":"Added book 20"}
@@ -494,6 +497,13 @@ Content-Type: `application/json`
       "author": "Randal E. Bryant, David R. O'Hallaron",
       "publisher": "Pearson",
       "isbn": "978-0134092669"
+    },
+    {
+      "id": 22,
+      "title": "Operating Systems: Three Easy Pieces",
+      "author": "Andrea C. Arpaci-Dusseau, Remzi H. Arpaci-Dusseau",
+      "publisher": "CreateSpace Independent Publishing Platform",
+      "isbn": "978-1985086593"
     }
   ]
 }
@@ -958,11 +968,461 @@ auth: unauthorized
 database: user not found
 ```
 
+#### 3.16 Borrow a book
+
+##### 3.16.1 Request
+
+Method: `POST /user/books/:id`  
+Content-Type: `application/json`  
+CLI command: `borrow book`
+
+```json {.line-numbers}
+{"borrow_date": "2020-01-01T12:00:00Z"}
+```
+
+In `realms`:
+
+- Debug mode: `true`
+
+```text {.line-numbers}
+> borrow book
+Book ID: 20
+(Format: yyyy-mm-dd)
+Borrow date: 2020-01-01
+(Format: hh:mm:ss)
+Borrow time: 12:00:00
+```
+
+- Debug mode: `false`
+
+```text {.line-numbers}
+> borrow book
+Book ID: 20
+```
+
+**User** privilege is required.
+
+Here we add a debug mode for testing purposes, since it's impossible to keep waiting for several weeks until the borrowed book is overdue. When debug mode is enabled, a user can input the borrowing date manually, otherwise it will be set to the current date and time.
+
+The following message will be written to log.
+
+```json {.line-numbers}
+{"level":"info","time":"2020-05-05T15:50:00.395+0800","msg":"User 5 borrowed book 20"}
+```
+
+##### 3.16.2 Response
+
+Status: `200 OK`  
+Content-Type: `application/json`
+
+```json {.line-numbers}
+{
+  "data": {
+    "id": 15,
+    "user_id": 5,
+    "book_id": 20,
+    "return_date": "2020-01-15T12:00:00Z",
+    "extend_times": 0,
+    "real_return_date": null
+  }
+}
+```
+
+The default return date is `14` days after the borrowing date. You may change it in the config file `./configs/library_config.json`.
+
+```text {.line-numbers}
+Successfully borrowed book 20
+Your return date is: 2020-01-15T12:00:00Z
+```
+
+If a user has more than `3` overdue books not returned (the limit may also be customized), his/her account will be suspended, which means he/she is no longer allowed to borrow another book before returning the overdue books. In that case, an error will be returned.
+
+```text {.line-numbers}
+library: too many overdue books
+```
+
+If the book has already been borrowed by the current user before, here comes another error.
+
+```text {.line-numbers}
+library: book already borrowed
+```
+
+Other possible error messages are shown below.
+
+```text {.line-numbers}
+auth: unauthorized
+database: book not found
+```
+
+#### 3.17 Return a book
+
+##### 3.17.1 Request
+
+Method: `DELETE /user/books/:id`  
+CLI command: `return book`
+
+In `realms`:
+
+```text {.line-numbers}
+> return book
+Book ID: 20
+```
+
+**User** privilege is required.
+
+In the implementation of `realmsd`, the record is soft deleted, which means it will not be actually removed from the table. Instead, we use a `delete_at` column to store the time when the record is removed (the book is returned). Therefore, these records are temporarily ignored in most queries, but can still be obtained using the command `show history`, which we will talk about later.
+
+The following message will be written to log.
+
+```json {.line-numbers}
+{"level":"info","time":"2020-05-05T17:18:07.279+0800","msg":"User 5 returned book 20"}
+```
+
+##### 3.17.2 Response
+
+Status: `200 OK`  
+Content-Type: `application/json`
+
+```json {.line-numbers}
+{"data": true}
+```
+
+Output:
+
+```text {.line-numbers}
+Successfully returned book 20
+```
+
+If the book has not been borrowed by the current user before, an error will be returned.
+
+```text {.line-numbers}
+library: book not borrowed
+```
+
+Other possible error messages are shown below.
+
+```text {.line-numbers}
+auth: unauthorized
+```
+
+Why there's not a `book not found` error here? It's to prevent the case that an admin removed a book which had been borrowed, and now the user who borrowed it wants to return it back.
+
+#### 3.18 Check the deadline to return a book
+
+##### 3.18.1 Request
+
+Method: `GET /user/books/:id`  
+CLI command: `check ddl`
+
+In `realms`:
+
+```text {.line-numbers}
+> check ddl
+Book ID: 22
+```
+
+**User** privilege is required.
+
+##### 3.18.2 Response
+
+Status: `200 OK`  
+Content-Type: `application/json`
+
+```json {.line-numbers}
+{
+  "data": {
+    "id": 30,
+    "user_id": 5,
+    "book_id": 22,
+    "return_date": "2020-04-15T12:00:00Z",
+    "extend_times": 0,
+    "real_return_date": null
+  }
+}
+```
+
+Output:
+
+```text {.line-numbers}
+Record 30
+   Book ID:     22
+   Return Date: 2020-04-15T12:00:00Z
+   Extended:    0/3
+```
+
+Possible error messages are shown below.
+
+```text {.line-numbers}
+auth: unauthorized
+library: book not borrowed
+```
+
+#### 3.19 Extend the deadline to return a book
+
+##### 3.19.1 Request
+
+Method: `PATCH /user/books/:id`  
+CLI command: `extend ddl`
+
+In `realms`:
+
+```text {.line-numbers}
+> extend ddl
+Book ID: 22
+```
+
+**User** privilege is required.
+
+##### 3.19.2 Response
+
+Status: `200 OK`  
+Content-Type: `application/json`
+
+```json {.line-numbers}
+{
+  "data": {
+    "id": 30,
+    "user_id": 5,
+    "book_id": 22,
+    "return_date": "2020-04-22T12:00:00Z",
+    "extend_times": 1,
+    "real_return_date": null
+  }
+}
+```
+
+By default, the return date is extended by `7` days per request, and a user can extend the deadline for at most `3` times. You may change them in the config file `./configs/library_config.json`.
+
+```text {.line-numbers}
+Record 30
+   Book ID:     22
+   Return Date: 2020-04-22T12:00:00Z
+   Extended:    1/3
+```
+
+If a user tries to extend for more than `3` times, an error will be returned.
+
+```text {.line-numbers}
+library: extended too many times
+```
+
+Other possible error messages are shown below.
+
+```text {.line-numbers}
+auth: unauthorized
+library: book not borrowed
+```
+
+#### 3.20 Show all books that you've borrowed
+
+##### 3.20.1 Request
+
+Method: `GET /user/books`  
+CLI command: `show list`
+
+In `realms`:
+
+```text {.line-numbers}
+> show list
+```
+
+**User** privilege is required.
+
+##### 3.20.2 Response
+
+Status: `200 OK`  
+Content-Type: `application/json`
+
+```json {.line-numbers}
+{
+  "data": [
+    {
+      "id": 2,
+      "user_id": 5,
+      "book_id": 12,
+      "return_date": "2019-02-10T18:00:00Z",
+      "extend_times": 3,
+      "real_return_date": null
+    },
+    {
+      "id": 30,
+      "user_id": 5,
+      "book_id": 22,
+      "return_date": "2020-04-22T12:00:00Z",
+      "extend_times": 1,
+      "real_return_date": null
+    },
+    {
+      "id": 32,
+      "user_id": 5,
+      "book_id": 20,
+      "return_date": "2020-05-20T12:00:00Z",
+      "extend_times": 0,
+      "real_return_date": null
+    }
+  ]
+}
+```
+
+Output:
+
+```text {.line-numbers}
+ID      Book ID   Return Date           Extended
+------------------------------------------------
+2       12        2019-02-10T18:00:00Z  3/3
+30      22        2020-04-22T12:00:00Z  1/3
+32      20        2020-05-20T12:00:00Z  0/3
+```
+
+If there's no record found, `realms` will print the following message.
+
+```text {.line-numbers}
+No records found
+```
+
+Possible error messages are shown below.
+
+```text {.line-numbers}
+auth: unauthorized
+```
+
+#### 3.21 Show all overdue books that you've borrowed
+
+##### 3.21.1 Request
+
+Method: `GET /user/overdue`  
+CLI command: `show overdue`
+
+In `realms`:
+
+```text {.line-numbers}
+> show overdue
+```
+
+**User** privilege is required.
+
+##### 3.21.2 Response
+
+Status: `200 OK`  
+Content-Type: `application/json`
+
+```json {.line-numbers}
+{
+  "data": [
+    {
+      "id": 2,
+      "user_id": 5,
+      "book_id": 12,
+      "return_date": "2019-02-10T18:00:00Z",
+      "extend_times": 3,
+      "real_return_date": null
+    },
+    {
+      "id": 30,
+      "user_id": 5,
+      "book_id": 22,
+      "return_date": "2020-04-22T12:00:00Z",
+      "extend_times": 1,
+      "real_return_date": null
+    }
+  ]
+}
+```
+
+The records will be ordered by return date in ascending order.
+
+```text {.line-numbers}
+ID      Book ID   Return Date           Extended
+------------------------------------------------
+2       12        2019-02-10T18:00:00Z  3/3
+30      22        2020-04-22T12:00:00Z  1/3
+```
+
+Possible error messages are shown below.
+
+```text {.line-numbers}
+auth: unauthorized
+```
+
+#### 3.22 Show all your records
+
+##### 3.22.1 Request
+
+Method: `GET /user/history`  
+CLI command: `show history`
+
+In `realms`:
+
+```text {.line-numbers}
+> show history
+```
+
+**User** privilege is required.
+
+##### 3.22.2 Response
+
+Status: `200 OK`  
+Content-Type: `application/json`
+
+```json {.line-numbers}
+{
+  "data": [
+    {
+      "id": 32,
+      "user_id": 5,
+      "book_id": 20,
+      "return_date": "2020-05-20T12:00:00Z",
+      "extend_times": 0,
+      "real_return_date": null
+    },
+    {
+      "id": 30,
+      "user_id": 5,
+      "book_id": 22,
+      "return_date": "2020-04-22T12:00:00Z",
+      "extend_times": 1,
+      "real_return_date": null
+    },
+    {
+      "id": 15,
+      "user_id": 5,
+      "book_id": 20,
+      "return_date": "2020-01-15T12:00:00Z",
+      "extend_times": 0,
+      "real_return_date": null
+    },
+    {
+      "id": 2,
+      "user_id": 5,
+      "book_id": 12,
+      "return_date": "2019-02-10T18:00:00Z",
+      "extend_times": 3,
+      "real_return_date": null
+    }
+  ]
+}
+```
+
+The records will be ordered by record ID in descending order. Here returned date is equal to `real_return_date` in the response, which is the same as `delete_at` in the database. That's why we use a soft delete.
+
+```text {.line-numbers}
+ID      Book ID   Return Date           Extended  Returned Date
+----------------------------------------------------------------------
+32      20        2020-05-20T12:00:00Z  0/3       N/A
+30      22        2020-04-22T12:00:00Z  1/3       N/A
+15      20        2020-01-15T12:00:00Z  0/3       2020-05-05T17:18:07Z
+2       12        2019-02-10T18:00:00Z  3/3       N/A
+```
+
+Possible error messages are shown below.
+
+```text {.line-numbers}
+auth: unauthorized
+```
+
 ## TODO
 
-- [x] Add a simple CLI front-end
 - [ ] Add unit tests
-- [ ] Add a detailed document
 
 ## Contributors
 
