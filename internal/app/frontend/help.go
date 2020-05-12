@@ -43,7 +43,7 @@ func ShowHelp() error {
 	printCommand("extend ddl", "Extends the deadline to return a book")
 	printCommand("show list", "Shows all books that you've borrowed")
 	printCommand("show overdue", "Shows all overdue books that you've borrowed")
-	printCommand("show history", "Shows all records")
+	printCommand("show history", "Shows all your records")
 
 	return nil
 }

@@ -28,9 +28,6 @@ var ErrBookBorrowed = errors.New("library: book already borrowed")
 // not been borrowed before
 var ErrBookNotBorrowed = errors.New("library: book not borrowed")
 
-// ErrRecordNotFound occurs when the record is not found
-var ErrRecordNotFound = errors.New("database: record not found")
-
 // ErrExceedMaxExtendTimes occurs when the user has extended the deadline too
 // many times
 var ErrExceedMaxExtendTimes = errors.New("library: extended too many times")
@@ -125,7 +122,7 @@ func ExtendDeadline(c *gin.Context) {
 	var record models.Record
 	bookID := c.Param("id")
 	if err := db.Where("user_id = ? AND book_id = ?", userID, bookID).First(&record).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": ErrRecordNotFound.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": ErrBookNotBorrowed.Error()})
 		return
 	}
 
