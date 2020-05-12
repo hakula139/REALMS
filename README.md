@@ -519,7 +519,7 @@ No books found
 
 In the implementation of `realms`, when handling distinct responses, generally we use an `interface{}` to represent the unknown data type (which can be `bool`, `int`, `string`, `map[string]interface{}`). However, when it comes to this response, the returned data is in fact a `[]map[string]interface{}`, which cannot be asserted directly. So here's a workaround.
 
-```go
+```go {.line-numbers}
 // ShowBooks shows all books in the library
 func ShowBooks() error {
   // ...
@@ -575,7 +575,7 @@ Content-Type: `application/json`
 
 Output:
 
-```text
+```text {.line-numbers}
 Book 20
    Title:     Computer Systems
    Author:    Randal E. Bryant, David R. O'Hallaron
@@ -628,7 +628,7 @@ etc.
 
 In `realms`:
 
-```text
+```text {.line-numbers}
 > find books
 Title (optional): system
 Author (optional):
@@ -663,7 +663,7 @@ Content-Type: `application/json`
 
 Output:
 
-```text
+```text {.line-numbers}
 ID      Title                    Author                   Publisher                ISBN
 ------------------------------------------------------------------------------------------------------------
 20      Computer Systems         Randal E. Bryant, David  Pearson                  978-0134092669
@@ -737,7 +737,7 @@ Content-Type: `application/json`
 
 Output:
 
-```text
+```text {.line-numbers}
 Successfully added user 11
 ```
 
@@ -746,6 +746,216 @@ Possible error messages are shown below.
 ```text {.line-numbers}
 auth: unauthorized
 database: username already exists
+```
+
+#### 3.12 Update data of a user
+
+##### 3.12.1 Request
+
+Method: `PATCH /admin/users/:id`  
+Content-Type: `application/json`  
+CLI command: `update user`
+
+```json {.line-numbers}
+{
+  "password": "000000",
+  "level": 2
+}
+```
+
+In `realms`:
+
+```text {.line-numbers}
+> update user
+User ID: 11
+Enter Password:
+Enter Password again:
+(1: User, 2: Admin, 3: Super Admin)
+Enter Privilege Level: 2
+```
+
+**Admin** privilege is required.
+
+Here `:id` refers to the user ID. The `level` field is optional.
+
+The following message will be written to log.
+
+```json {.line-numbers}
+{"level":"info","time":"2020-05-05T15:11:07.467+0800","msg":"Updated user 11"}
+```
+
+##### 3.12.2 Response
+
+Status: `200 OK`  
+Content-Type: `application/json`
+
+```json {.line-numbers}
+{
+  "data": {
+    "id": 11,
+    "username": "Guest",
+    "password": "$2a$10$AKXBbTkngAwdW8SQXkswu.5mgOMcJZB80YtVz6M3pA2nK8UIjOxCO",
+    "level": 2
+  }
+}
+```
+
+Output:
+
+```text {.line-numbers}
+Successfully updated user 11
+```
+
+Possible error messages are shown below.
+
+```text {.line-numbers}
+auth: unauthorized
+database: user not found
+```
+
+#### 3.13 Remove a user
+
+##### 3.13.1 Request
+
+Method: `DELETE /admin/users/:id`  
+CLI command: `remove user`
+
+In `realms`:
+
+```text {.line-numbers}
+> remove user
+User ID: 11
+```
+
+**Admin** privilege is required.
+
+The following message will be written to log.
+
+```json {.line-numbers}
+{"level":"info","time":"2020-05-05T15:20:12.451+0800","msg":"Removed user 11"}
+```
+
+##### 3.13.2 Response
+
+Status: `200 OK`  
+Content-Type: `application/json`
+
+```json {.line-numbers}
+{"data": true}
+```
+
+Output:
+
+```text {.line-numbers}
+Successfully removed user 11
+```
+
+Possible error messages are shown below.
+
+```text {.line-numbers}
+auth: unauthorized
+database: user not found
+```
+
+#### 3.14 Show all users
+
+##### 3.14.1 Request
+
+Method: `GET /admin/users`  
+CLI command: `show users`
+
+In `realms`:
+
+```text {.line-numbers}
+> show users
+```
+
+**Admin** privilege is required.
+
+##### 3.14.2 Response
+
+Status: `200 OK`  
+Content-Type: `application/json`
+
+```json {.line-numbers}
+{
+  "data": [
+    {
+      "id": 3,
+      "username": "Hakula",
+      "password": "$2a$10$XEh0dNu4eNOJqXaf0Z.dVeHceZOU7gOaOqI8tXdy9dVXyskBFP5Hm",
+      "level": 3
+    },
+    {
+      "id": 5,
+      "username": "Alukah",
+      "password": "$2a$10$NogyoGcBYGDbOmjwI8L6Iui303oq4A2bEx7HFQitfsLxweU2BxoDK",
+      "level": 1
+    }
+  ]
+}
+```
+
+It's obvious that we don't need to display the hashed passwords here.
+
+```text {.line-numbers}
+ID      Username                 Level
+--------------------------------------
+3       Hakula                   3
+5       Alukah                   1
+```
+
+Possible error messages are shown below.
+
+```text {.line-numbers}
+auth: unauthorized
+```
+
+#### 3.15 Show the user of given ID
+
+##### 3.15.1 Request
+
+Method: `GET /admin/users/:id`  
+CLI command: `show user`
+
+In `realms`:
+
+```text {.line-numbers}
+> show user
+User ID: 3
+```
+
+**Admin** privilege is required.
+
+##### 3.15.2 Response
+
+Status: `200 OK`  
+Content-Type: `application/json`
+
+```json {.line-numbers}
+{
+  "data": {
+    "id": 3,
+    "username": "Hakula",
+    "password": "$2a$10$XEh0dNu4eNOJqXaf0Z.dVeHceZOU7gOaOqI8tXdy9dVXyskBFP5Hm",
+    "level": 3
+  }
+}
+```
+
+Output:
+
+```text {.line-numbers}
+User 3
+   Username: Hakula
+   Level:    3
+```
+
+Possible error messages are shown below.
+
+```text {.line-numbers}
+auth: unauthorized
+database: user not found
 ```
 
 ## TODO
