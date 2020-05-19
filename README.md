@@ -1471,7 +1471,7 @@ There're currently 3 tables in database `library`, namely, `books`, `users` and 
 | Field     | Type             | Null | Key |
 |:----------|:-----------------|:----:|:---:|
 | id        | int(10) unsigned | NO   | PRI |
-| title     | varchar(255)     | YES  | /   |
+| title     | varchar(255)     | NO   | /   |
 | author    | varchar(255)     | YES  | /   |
 | publisher | varchar(255)     | YES  | /   |
 | isbn      | varchar(255)     | YES  | /   |
