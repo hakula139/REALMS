@@ -2,6 +2,41 @@
 
 REALMS Establishes A Library Management System, written in Go, using a MySQL database.
 
+## Table of Contents
+
+- [Getting started](#getting-started)
+  - [0. Prerequisities](#0-prerequisities)
+  - [1. Installation](#1-installation)
+  - [2. Usage](#2-usage)
+    - [2.1 realmsd](#21-realmsd)
+    - [2.2 realms](#22-realms)
+  - [3. REST API](#3-rest-api)
+    - [3.1 Log in](#31-log-in)
+    - [3.2 Log out](#32-log-out)
+    - [3.3 Show current logged-in user](#33-show-current-logged-in-user)
+    - [3.4 Show the current login status](#34-show-the-current-login-status)
+    - [3.5 Add a new book](#35-add-a-new-book)
+    - [3.6 Update data of a book](#36-update-data-of-a-book)
+    - [3.7 Remove a book](#37-remove-a-book)
+    - [3.8 Show all books](#38-show-all-books)
+    - [3.9 Show the book of given ID](#39-show-the-book-of-given-id)
+    - [3.10 Find books by title / author / ISBN](#310-find-books-by-title---author---isbn)
+    - [3.11 Add a new user](#311-add-a-new-user)
+    - [3.12 Update data of a user](#312-update-data-of-a-user)
+    - [3.13 Remove a user](#313-remove-a-user)
+    - [3.14 Show all users](#314-show-all-users)
+    - [3.15 Show the user of given ID](#315-show-the-user-of-given-id)
+    - [3.16 Borrow a book](#316-borrow-a-book)
+    - [3.17 Return a book](#317-return-a-book)
+    - [3.18 Check the deadline to return a book](#318-check-the-deadline-to-return-a-book)
+    - [3.19 Extend the deadline to return a book](#319-extend-the-deadline-to-return-a-book)
+    - [3.20 Show all books that you've borrowed](#320-show-all-books-that-you-ve-borrowed)
+    - [3.21 Show all overdue books that you've borrowed](#321-show-all-overdue-books-that-you-ve-borrowed)
+    - [3.22 Show all your records](#322-show-all-your-records)
+- [TODO](#todo)
+- [Contributors](#contributors)
+- [License](#license)
+
 ## Getting started
 
 ### 0. Prerequisities
