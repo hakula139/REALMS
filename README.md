@@ -610,13 +610,13 @@ CLI command: `find books`
 To search by title (fuzzy, case-insensitive):
 
 ```json {.line-numbers}
-{"title": "system"}
+{"title": "o sys"}
 ```
 
-To search by author (exact, case-insensitive):
+To search by author (fuzzy, case-insensitive):
 
 ```json {.line-numbers}
-{"author": "Randal E. Bryant, David R. O'Hallaron"}
+{"author": "bryant"}
 ```
 
 To search by ISBN (exact, case-insensitive):
@@ -640,7 +640,7 @@ In `realms`:
 
 ```text {.line-numbers}
 > find books
-Title (optional): system
+Title (optional): o sys
 Author (optional):
 ISBN (optional):
 ```

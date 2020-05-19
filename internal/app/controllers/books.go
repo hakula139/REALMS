@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hakula139/REALMS/internal/app/models"
@@ -169,10 +170,12 @@ func FindBooks(c *gin.Context) {
 		chain = chain.Where("ISBN = ?", ISBN)
 	}
 	if author := input.Author; author != "" {
-		chain = chain.Where("author = ?", author)
+		query := strings.ReplaceAll(author, " ", "%")
+		chain = chain.Where("author LIKE ?", "%"+query+"%")
 	}
 	if title := input.Title; title != "" {
-		chain = chain.Where("title LIKE ?", "%"+title+"%")
+		query := strings.ReplaceAll(title, " ", "%")
+		chain = chain.Where("title LIKE ?", "%"+query+"%")
 	}
 	chain.Find(&books)
 
