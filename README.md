@@ -33,6 +33,11 @@ REALMS Establishes A Library Management System, written in Go, using a MySQL dat
     - [3.20 Show all books that you've borrowed](#320-show-all-books-that-you-ve-borrowed)
     - [3.21 Show all overdue books that you've borrowed](#321-show-all-overdue-books-that-you-ve-borrowed)
     - [3.22 Show all your records](#322-show-all-your-records)
+- [Design](#design)
+  - [1. Database schema](#1-database-schema)
+    - [1.1 books](#11-books)
+    - [1.2 users](#12-users)
+    - [1.3 records](#13-records)
 - [TODO](#todo)
 - [Contributors](#contributors)
 - [License](#license)
@@ -1454,6 +1459,42 @@ Possible error messages are shown below.
 ```text {.line-numbers}
 auth: unauthorized
 ```
+
+## Design
+
+### 1. Database schema
+
+There're currently 3 tables in database `library`, namely, `books`, `users` and `records`.
+
+#### 1.1 books
+
+| Field     | Type             | Null | Key |
+|:----------|:-----------------|:----:|:---:|
+| id        | int(10) unsigned | NO   | PRI |
+| title     | varchar(255)     | YES  | /   |
+| author    | varchar(255)     | YES  | /   |
+| publisher | varchar(255)     | YES  | /   |
+| isbn      | varchar(255)     | YES  | /   |
+
+#### 1.2 users
+
+| Field    | Type             | Null | Key |
+|:---------|:-----------------|:----:|:---:|
+| id       | int(10) unsigned | NO   | PRI |
+| username | varchar(255)     | NO   | UNI |
+| password | varchar(255)     | NO   | /   |
+| level    | int(10) unsigned | NO   | /   |
+
+#### 1.3 records
+
+| Field        | Type             | Null | Key |
+|:-------------|:-----------------|:----:|:---:|
+| id           | int(10) unsigned | NO   | PRI |
+| user_id      | int(10) unsigned | NO   | /   |
+| book_id      | int(10) unsigned | NO   | /   |
+| return_date  | datetime         | NO   | /   |
+| extend_times | int(10) unsigned | NO   | /   |
+| deleted_at   | datetime         | YES  | /   |
 
 ## TODO
 
